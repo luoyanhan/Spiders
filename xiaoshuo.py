@@ -80,6 +80,7 @@ user_agent_list = [
 ]
 
 FAIL_LIST = []
+FINAL_FAIL = []
 
 def _get_content(url, filename, flag = True):
     HEADERS = {}
@@ -103,6 +104,8 @@ def _get_content(url, filename, flag = True):
         print('FAIL: '+filename)
         if flag:
             FAIL_LIST.append([url, filename])
+        else:
+            FINAL_FAIL.append([url, filename])
 
 def _get_chapter_url(url):
     HEADERS = {}
@@ -131,13 +134,10 @@ if __name__ == "__main__":
         count += 1
         if count % 10 == 0:
             time.sleep(random.choice(list(range(1, 5))))
-    count = 0
-    while len(FAIL_LIST) != 0:
+
+    if len(FAIL_LIST) != 0:
         for i in FAIL_LIST:
             _get_content(i[0], i[1], flag=False)
-        count += 1
-        if count > 2:
-            print(FAIL_LIST)
-            break
+        print(FINAL_FAIL)
 
 
