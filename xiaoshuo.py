@@ -1,5 +1,4 @@
 from bs4 import BeautifulSoup
-import re
 import random
 import time
 import requests
@@ -80,7 +79,9 @@ user_agent_list = [
     'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.0; WOW64; SLCC1; .NET CLR 2.0.50727; Media Center PC 5.0; InfoPath.2; .NET CLR 3.5.30729; .NET CLR 3.0.30618; .NET CLR 1.1.4322)',
 ]
 
-def _get_content(url, filename):
+FAIL_LIST = []
+
+def _get_content(url, filename, flag = True):
     HEADERS = {}
     HEADERS['User-Agent'] = random.choice(user_agent_list)
     count = 0
@@ -96,9 +97,12 @@ def _get_content(url, filename):
             break
         except:
             print('timeout: '+url)
+            time.sleep(1)
             count += 1
     if count == 3:
         print('FAIL: '+filename)
+        if flag:
+            FAIL_LIST.append([url, filename])
 
 def _get_chapter_url(url):
     HEADERS = {}
@@ -113,20 +117,27 @@ def _get_chapter_url(url):
 
 
 if __name__ == "__main__":
-    # chapters = _get_chapter_url('http://www.biquge.com.tw/18_18820/')
-    # number = len(chapters)
-    # count = 1
-    # for chapter in chapters:
-    #     soup = BeautifulSoup(str(chapter), 'lxml')
-    #     url = 'http://www.biquge.com.tw' + soup.a.get('href')
-    #     filename = soup.a.text + '.txt'
-    #     print(url)
-    #     _get_content(url, filename)
-    #     print(count, number, filename)
-    #     # print('已下载%.2f%%' % (float(count/number)*100))
-    #     count += 1
-    #     if count % 10 == 0:
-    #         time.sleep(random.choice(list(range(1, 5))))
-    _get_content('http://www.biquge.com.tw/18_18820/9193461.html', '第十一篇 第五章 百柄剑器.txt')
+    chapters = _get_chapter_url('http://www.biquge.com.tw/18_18820/')  #这里放入小说目录url
+    number = len(chapters)
+    count = 1
+    for chapter in chapters:
+        soup = BeautifulSoup(str(chapter), 'lxml')
+        url = 'http://www.biquge.com.tw' + soup.a.get('href')
+        filename = soup.a.text + '.txt'
+        print(url)
+        _get_content(url, filename)
+        print(count, number, filename)
+        # print('已下载%.2f%%' % (float(count/number)*100))
+        count += 1
+        if count % 10 == 0:
+            time.sleep(random.choice(list(range(1, 5))))
+    count = 0
+    while len(FAIL_LIST) != 0:
+        for i in FAIL_LIST:
+            _get_content(i[0], i[1], flag=False)
+        count += 1
+        if count > 2:
+            print(FAIL_LIST)
+            break
 
 
